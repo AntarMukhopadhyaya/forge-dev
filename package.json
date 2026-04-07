@@ -36,6 +36,14 @@
   ],
   "author": "Antar Mukhopadhyaya",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AntarMukhopadhyaya/forge-dev.git"
+  },
+  "homepage": "https://github.com/AntarMukhopadhyaya/forge-dev#readme",
+  "bugs": {
+    "url": "https://github.com/AntarMukhopadhyaya/forge-dev/issues"
+  },
   "type": "module",
   "devDependencies": {
     "@eslint/js": "^10.0.1",

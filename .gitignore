@@ -35,3 +35,4 @@ Thumbs.db
 # Local generated scaffold projects
 next-saas-example/
 my-app/
+.vscode/
