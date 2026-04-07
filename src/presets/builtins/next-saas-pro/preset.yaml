@@ -1,0 +1,43 @@
+name: next-saas-pro
+description: "Next.js SaaS starter with Better Auth organizations and Drizzle"
+version: "1.0"
+runtime: node
+
+variables:
+  project:
+    type: string
+    prompt: "Project name"
+    default: "my-saas-app"
+
+steps:
+  - run: npx create-next-app@latest . --ts --eslint --src-dir --import-alias @/* --yes
+  - install:
+      deps: [better-auth, "@better-auth/drizzle-adapter", drizzle-orm, pg, dotenv]
+  - install:
+      deps: [drizzle-kit, "@types/pg"]
+      dev: true
+  - file:
+      path: src/lib/db.ts
+      template: ./templates/db.ts.hbs
+  - file:
+      path: src/lib/auth.ts
+      template: ./templates/auth.ts.hbs
+  - file:
+      path: src/lib/auth-client.ts
+      template: ./templates/auth-client.ts.hbs
+  - file:
+      path: src/app/api/auth/[...all]/route.ts
+      template: ./templates/auth-route.ts.hbs
+  - file:
+      path: drizzle.config.ts
+      template: ./templates/drizzle.config.ts.hbs
+  - env:
+      BETTER_AUTH_SECRET: "replace-with-a-32-char-secret"
+      BETTER_AUTH_URL: "http://localhost:3000"
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/next_saas_pro"
+
+postRun:
+  - "cd {{project}}"
+  - "npx auth@latest generate"
+  - "npx drizzle-kit generate"
+  - "npm run dev"

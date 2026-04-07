@@ -1,0 +1,70 @@
+{
+  "name": "forge-dev",
+  "version": "1.0.0",
+  "description": "Scaffold modern app stacks from reusable preset modules.",
+  "bin": {
+    "forge": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc && npm run copy-assets",
+    "copy-assets": "copyfiles -u 1 \"src/templates/**/*\" dist && copyfiles -u 1 \"src/presets/builtins/**/*\" dist",
+    "test": "node --import tsx --test test/presets.test.ts test/prompts.test.ts test/remote-presets.test.ts test/version-policy.test.ts test/doctor.test.ts test/runtime.test.ts test/formatters.test.ts",
+    "dev": "tsx src/index.ts",
+    "lint": "eslint src test --max-warnings=0",
+    "lint:fix": "npm run lint -- --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "scaffold",
+    "starter",
+    "boilerplate",
+    "cli",
+    "codegen",
+    "nextjs",
+    "expo",
+    "mern",
+    "drizzle",
+    "better-auth"
+  ],
+  "author": "Antar Mukhopadhyaya",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^25.5.0",
+    "@types/prompt": "^1.1.9",
+    "@types/prompts": "^2.4.9",
+    "@types/string-similarity": "^4.0.2",
+    "copyfiles": "^2.4.1",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.4.0",
+    "prettier": "^3.8.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.0"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3",
+    "execa": "^9.6.1",
+    "fs-extra": "^11.3.4",
+    "handlebars": "^4.7.9",
+    "ora": "^9.3.0",
+    "prompts": "^2.4.2",
+    "string-similarity": "^4.0.4",
+    "yaml": "^2.8.3",
+    "zod": "^4.3.6"
+  }
+}

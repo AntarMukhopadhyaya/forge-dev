@@ -1,0 +1,5 @@
+{
+  "name": "expo",
+  "tags": ["mobile", "react-native", "supabase"],
+  "description": "Expo React Native with Supabase-ready setup"
+}

@@ -1,0 +1,5 @@
+{
+  "name": "next",
+  "tags": ["nextjs", "auth", "drizzle"],
+  "description": "Next.js with Tailwind and Auth"
+}

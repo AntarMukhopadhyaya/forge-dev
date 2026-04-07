@@ -1,0 +1,69 @@
+name: mern-stack
+description: "Full MERN monorepo (Vite React TS + Express + MongoDB)"
+version: "1.0"
+runtime: node
+packageManager: npm
+
+variables:
+  project:
+    type: string
+    prompt: "Project name"
+    default: "my-app"
+
+  mongoUri:
+    type: string
+    prompt: "MongoDB connection string"
+    default: "mongodb://127.0.0.1:27017/forge-mern"
+
+  apiPort:
+    type: string
+    prompt: "API port"
+    default: "5000"
+
+  viteApiBaseUrl:
+    type: string
+    prompt: "Frontend API base URL"
+    default: "/api"
+
+steps:
+  - run: npm create vite@latest frontend -- --template react-ts --no-install
+  - run: cd frontend && npm install
+  - run: cd frontend && npm install -D @vitejs/plugin-react @tailwindcss/vite tailwindcss
+  - run: mkdir backend
+  - file:
+      path: backend/package.json
+      template: ./templates/backend.package.json.hbs
+  - file:
+      path: backend/index.ts
+      template: ./templates/backend/index.ts.hbs
+      vars:
+        mongoUri: "{{mongoUri}}"
+        apiPort: "{{apiPort}}"
+  - run: cd backend && npm install express cors dotenv mongoose morgan tsx
+  - run: cd backend && npm install -D typescript @types/node @types/express @types/cors @types/morgan
+  - file:
+      path: package.json
+      template: ./templates/root.package.json.hbs
+      vars:
+        project: "{{project}}"
+  - run: npm install -D concurrently
+  - file:
+      path: backend/.env
+      template: ./templates/backend.env.hbs
+      vars:
+        mongoUri: "{{mongoUri}}"
+        apiPort: "{{apiPort}}"
+  - file:
+      path: frontend/.env
+      template: ./templates/frontend.env.hbs
+      vars:
+        viteApiBaseUrl: "{{viteApiBaseUrl}}"
+  - file:
+      path: frontend/vite.config.ts
+      template: ./templates/vite.config.ts.hbs
+      vars:
+        viteApiBaseUrl: "{{viteApiBaseUrl}}"
+        apiPort: "{{apiPort}}"
+
+postRun:
+  - "npm run dev"

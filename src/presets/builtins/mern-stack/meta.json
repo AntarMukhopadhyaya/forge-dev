@@ -1,0 +1,5 @@
+{
+  "name": "mern-stack",
+  "tags": ["mern", "monorepo", "fullstack"],
+  "description": "Full MERN monorepo (Vite React TS + Express + MongoDB)"
+}

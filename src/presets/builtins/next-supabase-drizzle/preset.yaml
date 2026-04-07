@@ -1,0 +1,39 @@
+name: next-supabase-drizzle
+description: "Next.js with Drizzle and Supabase configured out of the box"
+version: "1.0"
+runtime: node
+packageManager: npm
+
+variables:
+  project:
+    type: string
+    prompt: "Project name"
+    default: "my-app"
+
+steps:
+  - run: npx create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias @/* --yes
+  - install:
+      deps: [drizzle-orm, pg, "@supabase/supabase-js"]
+  - install:
+      deps: [drizzle-kit]
+      dev: true
+  - file:
+      path: src/lib/db.ts
+      template: ./templates/db.ts.hbs
+      vars:
+        type: postgres
+  - file:
+      path: src/lib/supabase.ts
+      template: ./templates/supabase.ts.hbs
+      vars:
+        envAccessor: "process.env"
+        urlEnv: "NEXT_PUBLIC_SUPABASE_URL"
+        keyEnv: "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+  - env:
+      DATABASE_URL: "your-database-url"
+      NEXT_PUBLIC_SUPABASE_URL: "your-supabase-url"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "your-supabase-anon-key"
+
+postRun:
+  - "cd {{project}}"
+  - "npm run dev"
