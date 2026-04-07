@@ -7,6 +7,7 @@ import { createPresetCommand } from "./commands/preset.js";
 import chalk from "chalk";
 import { ensureDoctorProfile } from "./core/doctor.js";
 import { doctorCommand } from "./commands/doctor.js";
+import pkg from "../package.json" with { type: "json" };
 
 const program = new Command();
 
@@ -51,7 +52,7 @@ ${chalk.bold("Example")}
 program
   .name(chalk.cyan("forge-dev"))
   .description(chalk.gray("Scaffold modern dev stacks, fast and clean"))
-  .version("1.0.0");
+  .version(pkg.version);
 
 program.hook("preAction", async (_thisCommand, actionCommand) => {
   if (actionCommand.name() === "doctor") {
