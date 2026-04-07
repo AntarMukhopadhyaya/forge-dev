@@ -37,10 +37,12 @@ function getBuiltinPresetDir(): string {
   const __dirname = path.dirname(__filename);
 
   const devPath = path.join(__dirname, "../../src/presets/builtins");
-  const prodPath = path.join(__dirname, "../../presets/builtins");
+  const prodPath = path.join(__dirname, "../presets/builtins");
+  const legacyProdPath = path.join(__dirname, "../../presets/builtins");
 
   if (fs.existsSync(devPath)) return devPath;
   if (fs.existsSync(prodPath)) return prodPath;
+  if (fs.existsSync(legacyProdPath)) return legacyProdPath;
 
   const cwdPath = path.join(process.cwd(), "presets/builtins");
   if (fs.existsSync(cwdPath)) return cwdPath;
@@ -313,8 +315,14 @@ export async function loadPreset(presetName: string): Promise<LoadedPreset> {
   } else {
     // Not found – show helpful error
     const available = getAvailablePresets();
-    const match = stringSimilarity.findBestMatch(presetName, available);
+
+    if (!available.length) {
+      throw new ForgeError("No presets found. Check installation or paths.");
+    }
+
     let suggestion = "";
+
+    const match = stringSimilarity.findBestMatch(presetName, available);
     if (match.bestMatch.rating > 0.4) {
       suggestion = `\nDid you mean "${match.bestMatch.target}"?\n`;
     }

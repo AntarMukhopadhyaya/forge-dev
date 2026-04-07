@@ -1,5 +1,5 @@
 {
-  "name": "forge-dev",
+  "name": "@antardev/forge-dev",
   "version": "1.0.0",
   "description": "Scaffold modern app stacks from reusable preset modules.",
   "bin": {
