@@ -223,52 +223,6 @@ npm run build
 npm run dev -- list
 ```
 
-## Demo Recording (VHS)
-
-Install VHS globally:
-
-```bash
-npm install -g vhs
-```
-
-Record the demo GIF:
-
-```bash
-npm run demo:record
-```
-
-Edit the tape at `scripts/demo.tape` to customize what gets recorded.
-
-## Publishing to npm
-
-### Preflight checklist
-
-Run this before every publish:
-
-```bash
-npm run lint
-npm test
-npm run build
-npm pack --dry-run
-npm publish --dry-run
-```
-
-What to verify:
-
-- no lint/type/test failures
-- tarball includes only intended files
-- CLI bin path is valid (`dist/index.js`)
-- no stale artifacts in `dist`
-
-### Version and publish
-
-```bash
-npm version patch
-npm publish --access public
-```
-
-Use `minor` or `major` as needed.
-
 ## Troubleshooting
 
 ### `Preset not found`
