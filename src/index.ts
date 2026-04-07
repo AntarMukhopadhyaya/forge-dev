@@ -43,13 +43,13 @@ ${chalk.bold("Available presets")}
 
   console.log(`
 ${chalk.bold("Example")}
-  ${chalk.cyan("forge init next my-app")}
+  ${chalk.cyan("forge-dev init next my-app")}
 `);
 }
 
 // Header branding (shown in help)
 program
-  .name(chalk.cyan("forge"))
+  .name(chalk.cyan("forge-dev"))
   .description(chalk.gray("Scaffold modern dev stacks, fast and clean"))
   .version("1.0.0");
 
@@ -95,10 +95,10 @@ program
 if (process.argv.length <= 2) {
   renderHeader();
   console.log(`${chalk.bold("Get started")}
-  ${chalk.cyan("forge init next my-app")}
+  ${chalk.cyan("forge-dev init next my-app")}
 
 ${chalk.bold("Browse presets")}
-  ${chalk.cyan("forge list")}
+  ${chalk.cyan("forge-dev list")}
 
 ${chalk.gray("Tip: use --dry-run to preview changes before writing files.")}
 `);

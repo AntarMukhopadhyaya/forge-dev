@@ -325,7 +325,7 @@ ${chalk.red("✖ Preset not found:")} ${chalk.bold(presetName)}${suggestion}
 ${chalk.yellow("Available presets:")}
 ${available.map((p) => `  • ${p}`).join("\n")}
 
-${chalk.gray("Tip: run `forge list` to see all presets")}
+${chalk.gray("Tip: run `forge-dev list` to see all presets")}
 `;
     throw new ForgeError(errorMessage);
   }

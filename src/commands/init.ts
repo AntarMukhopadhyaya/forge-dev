@@ -30,7 +30,7 @@ export async function initCommand(
     if (isGitHubPresetSpecifier(presetName)) {
       if (!options.trust) {
         throw new ForgeError(
-          "Remote GitHub presets require --trust. Example: forge init github.com/owner/repo my-app --trust",
+          "Remote GitHub presets require --trust. Example: forge-dev init github.com/owner/repo my-app --trust",
         );
       }
 

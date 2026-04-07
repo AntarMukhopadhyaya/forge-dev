@@ -301,7 +301,7 @@ export async function ensureDoctorProfile(
       return getDefaultProfile();
     }
 
-    throw new ForgeError("forge doctor failed to inspect your environment", {
+    throw new ForgeError("forge-dev doctor failed to inspect your environment", {
       cause: error as Error,
     });
   }
@@ -318,7 +318,7 @@ export async function resolveNodePackageManager(
     }
 
     throw new ForgeError(
-      `Requested package manager '${requested}' is not installed. Run 'forge doctor' to refresh environment details.`,
+      `Requested package manager '${requested}' is not installed. Run 'forge-dev doctor' to refresh environment details.`,
     );
   }
 

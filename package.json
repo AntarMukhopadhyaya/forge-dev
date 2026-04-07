@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Scaffold modern app stacks from reusable preset modules.",
   "bin": {
-    "forge": "dist/index.js"
+    "forge-dev": "dist/index.js"
   },
   "files": [
     "dist",

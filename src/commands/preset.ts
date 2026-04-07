@@ -65,7 +65,7 @@ Generated with Forge custom preset \`{{project}}\`.
     await fs.writeFile(templateFile, starterTemplate, "utf-8");
 
     console.log(chalk.green(`✔ Created custom preset: ${presetPath}`));
-    console.log(chalk.gray("Run it with: forge init " + safeName + " my-app"));
+    console.log(chalk.gray("Run it with: forge-dev init " + safeName + " my-app"));
   } catch (error) {
     if (error instanceof ForgeError) {
       console.error(chalk.red(`✖ ${error.message}`));

@@ -1,23 +1,54 @@
 ﻿# Forge CLI
 
-Forge is a TypeScript CLI that scaffolds modern projects from reusable, self-contained preset modules.
-It is designed for speed, repeatability, and low setup friction.
+Scaffold modern app stacks in seconds using reusable preset modules.
+
+No boilerplate. No lock-in. Just clean, repeatable setup.
+
+---
+
+## Demo
+
+![Forge Demo](./demo.gif)
+
+## Quick Start
+
+```bash
+npx forge-dev init next-saas-pro my-app
+cd my-app
+npm run dev
+```
+
+> Forge generates structure, not business logic.
 
 ## Why Forge
 
-Creating the same project foundations repeatedly costs time and introduces inconsistency.
+Setting up the same project foundations repeatedly is slow and inconsistent.
+
 Forge solves this by:
 
-- Running preset-driven scaffolding flows.
-- Keeping preset logic portable and versionable.
-- Supporting local custom presets and trusted remote preset sources.
-- Detecting local tooling automatically with `forge doctor`.
+- Running preset-driven scaffolding flows
+- Keeping presets portable and versionable
+- Supporting local and remote preset modules
+- Detecting your environment automatically with `forge-dev doctor`
+
+## Built-in Presets
+
+- next
+- next-saas-pro
+- next-supabase-drizzle
+- expo
+- tanstack-start
+- mern-stack
+
+## Remote Presets
+
+Remote presets require the `--trust` flag to prevent accidental execution of untrusted code.
 
 ## Core Features
 
 - Built-in preset modules under `src/presets/builtins/<preset>/preset.yaml`.
 - Custom preset modules under `~/.forge/presets/custom`.
-- Trusted remote preset import via `forge init <github-url> --trust`.
+- Trusted remote preset import via `forge-dev init <github-url> --trust`.
 - Variable prompts with defaults and choice options.
 - Conditional steps via `if` in preset steps.
 - Template rendering via Handlebars.
@@ -35,8 +66,8 @@ Forge solves this by:
 ### From npm (global)
 
 ```bash
-npm install -g forge-cli
-forge --help
+npm install -g forge-dev
+forge-dev --help
 ```
 
 ### Local development
@@ -46,24 +77,15 @@ npm install
 npm run dev -- list
 ```
 
-## Quick Start
-
-```bash
-forge list
-forge init next my-app
-cd my-app
-npm run dev
-```
-
 Dry run first when trying a new preset:
 
 ```bash
-forge init mern-stack my-app --dry-run
+forge-dev init mern-stack my-app --dry-run
 ```
 
 ## Commands
 
-### `forge init <preset> [project-name]`
+### `forge-dev init <preset> [project-name]`
 
 Scaffold a project from a preset.
 
@@ -77,50 +99,51 @@ Options:
 Examples:
 
 ```bash
-forge init next my-app
-forge init next-saas-pro my-saas-app
-forge init mern-stack my-app
-forge init ./presets/my-team/preset.yaml team-app
-forge init github.com/owner/custom-preset my-app --trust
+forge-dev init next my-app
+forge-dev init next-saas-pro my-saas-app
+forge-dev init mern-stack my-app
+forge-dev init ./presets/my-team/preset.yaml team-app
+forge-dev init github.com/owner/custom-preset my-app --trust
 ```
 
-### `forge list`
+Example output:
+
+```text
+✔ Project ready
+
+Next steps:
+1. Configure environment variables
+2. Run auth setup
+3. Run database setup
+4. Start development
+```
+
+### `forge-dev list`
 
 Shows available presets with source and optional tags.
 
-### `forge preset new <name>`
+### `forge-dev preset new <name>`
 
 Creates a custom preset module at:
 
 - `~/.forge/presets/custom/<name>/preset.yaml`
 - `~/.forge/presets/custom/<name>/templates/README.md.hbs`
 
-### `forge doctor`
+### `forge-dev doctor`
 
 Shows detected local environment and writes cache to `~/.forge/doctor.json`.
 
 ```bash
-forge doctor
-forge doctor --refresh
+forge-dev doctor
+forge-dev doctor --refresh
 ```
 
 Doctor tracks:
 
 - Node and package managers (`npm`, `pnpm`, `yarn`)
-- languages (`python`, `go`)
-- tools (`git`)
-- formatters (`prettier`, `black`, `gofmt`, `google-java-format`)
-
-## Built-in Presets
-
-Current built-ins include:
-
-- `next`
-- `next-saas-pro`
-- `next-supabase-drizzle`
-- `expo`
-- `tanstack-start`
-- `mern-stack`
+- Languages: Python, Go
+- Tools: Git
+- Formatters: `prettier`, `black`, `gofmt`, `google-java-format`
 
 ### `next-saas-pro` setup scope
 
@@ -158,7 +181,7 @@ Benefits:
 
 ## Preset Resolution Order
 
-When running `forge init <preset>`:
+When running `forge-dev init <preset>`:
 
 1. explicit path-like value (`/`, `\\`, `.yaml`, `.yml`)
 2. `./presets/<name>.yaml`
@@ -200,6 +223,22 @@ npm run build
 npm run dev -- list
 ```
 
+## Demo Recording (VHS)
+
+Install VHS globally:
+
+```bash
+npm install -g vhs
+```
+
+Record the demo GIF:
+
+```bash
+npm run demo:record
+```
+
+Edit the tape at `scripts/demo.tape` to customize what gets recorded.
+
 ## Publishing to npm
 
 ### Preflight checklist
@@ -234,14 +273,14 @@ Use `minor` or `major` as needed.
 
 ### `Preset not found`
 
-- Run `forge list`.
+- Run `forge-dev list`.
 - Verify preset name/path.
 - Validate YAML syntax.
 
 ### Missing formatter warnings
 
 Expected when formatter tools are not installed globally.
-Install the formatter you want, then run `forge doctor --refresh`.
+Install the formatter you want, then run `forge-dev doctor --refresh`.
 
 ### Remote preset blocked
 

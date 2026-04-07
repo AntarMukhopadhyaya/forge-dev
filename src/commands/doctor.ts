@@ -61,7 +61,7 @@ export async function doctorCommand(options: { refresh?: boolean } = {}) {
       }
     } else {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`✖ forge doctor failed: ${message}`));
+      console.error(chalk.red(`✖ forge-dev doctor failed: ${message}`));
     }
     process.exit(1);
   }
