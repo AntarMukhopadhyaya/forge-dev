@@ -1,24 +1,15 @@
 Output demo.gif
 
-Set Shell "powershell"
+Set Shell "bash"
+Set FontFamily "Fira Code"
 Set FontSize 16
-Set Width 1400
-Set Height 820
+Set Width 1200
+Set Height 720
 Set Theme "Dracula"
-Set TypingSpeed 85
+Set TypingSpeed 0.04s
 
-Type "cd .."
-Enter
-Sleep 1s
 
-Type "npx --yes @antardev/forge-dev@latest list"
-Enter
-Sleep 4s
 
-Type "npx --yes @antardev/forge-dev@latest -V"
+Type "npx --yes @antardev/forge-dev@latest init next-saas-pro next-app --dry-run --yes"
 Enter
-Sleep 2s
-
-Type "npx --yes @antardev/forge-dev@latest init ens my-ens-app --yes"
-Enter
-Sleep 10s
+Sleep 12s

@@ -8,7 +8,7 @@ No boilerplate. No lock-in. Just clean, repeatable setup.
 
 ## Demo
 
-![Forge Demo](./demo.gif)
+![Forge Demo](./images/demo.gif)
 
 ## Quick Start
 
