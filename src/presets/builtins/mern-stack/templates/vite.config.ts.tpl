@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      {{viteApiBaseUrl}}: {
+      "{{viteApiBaseUrl}}": {
         target: "http://localhost:{{apiPort}}",
         changeOrigin: true,
       },

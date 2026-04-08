@@ -285,6 +285,21 @@ test("mern-stack vite bootstrap command is non-interactive", async () => {
   assert.ok(firstRunStep.run.includes("--no-interactive"));
 });
 
+test("mern-stack vite proxy template keeps API base path quoted", async () => {
+  const templatePath = path.join(
+    process.cwd(),
+    "src",
+    "presets",
+    "builtins",
+    "mern-stack",
+    "templates",
+    "vite.config.ts.tpl",
+  );
+
+  const template = await fs.readFile(templatePath, "utf-8");
+  assert.ok(template.includes('"{{viteApiBaseUrl}}":'));
+});
+
 test("custom preset can use local templates next to the yaml", async () => {
   const originalCwd = process.cwd();
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-local-template-"));
