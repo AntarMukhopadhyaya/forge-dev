@@ -1,6 +1,6 @@
 {
   "name": "@antardev/forge-dev",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Scaffold modern app stacks from reusable preset modules.",
   "bin": {
     "forge-dev": "dist/index.js"
