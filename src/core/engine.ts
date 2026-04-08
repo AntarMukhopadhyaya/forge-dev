@@ -17,6 +17,7 @@ type PresetSource = "builtin" | "custom";
 
 interface PresetMeta {
   name: string;
+  aliases?: string[];
   description: string;
   tags?: string[];
   source: PresetSource;
@@ -111,6 +112,33 @@ function readBuiltinMetaFile(presetPath: string): BuiltinMetaFile | null {
   }
 }
 
+function normalizeAliases(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+
+  const seen = new Set<string>();
+  const aliases: string[] = [];
+
+  for (const value of raw) {
+    if (typeof value !== "string") continue;
+
+    const trimmed = value.trim();
+    if (!trimmed) continue;
+
+    const key = trimmed.toLowerCase();
+    if (seen.has(key)) continue;
+
+    seen.add(key);
+    aliases.push(trimmed);
+  }
+
+  return aliases;
+}
+
+function hasAliasMatch(aliases: string[], target: string): boolean {
+  const normalizedTarget = target.toLowerCase();
+  return aliases.some((alias) => alias.toLowerCase() === normalizedTarget);
+}
+
 function getAllPresetMeta(): PresetMeta[] {
   const all: PresetMeta[] = [];
   const builtinDir = tryGetBuiltinPresetDir();
@@ -129,9 +157,11 @@ function getAllPresetMeta(): PresetMeta[] {
         const tags = Array.isArray(metaFile?.tags)
           ? metaFile.tags.filter((tag): tag is string => typeof tag === "string")
           : undefined;
+        const aliases = normalizeAliases(parsed.aliases);
 
         all.push({
           name: String(metaName ?? parsed.name ?? inferPresetNameFromPath(fullPath)),
+          aliases: aliases.length > 0 ? aliases : undefined,
           description: String(metaDescription ?? parsed.description ?? "No description"),
           tags,
           source: "builtin",
@@ -157,9 +187,11 @@ function getAllPresetMeta(): PresetMeta[] {
       try {
         const content = fs.readFileSync(fullPath, "utf-8");
         const parsed = parseYaml(content) as Record<string, unknown>;
+        const aliases = normalizeAliases(parsed.aliases);
 
         all.push({
           name: String(parsed.name ?? path.parse(fullPath).name),
+          aliases: aliases.length > 0 ? aliases : undefined,
           description: String(parsed.description ?? "No description"),
           source: "custom",
           path: fullPath,
@@ -183,6 +215,10 @@ export function getAvailablePresets(): string[] {
 
     for (const preset of presets) {
       names.add(preset.name);
+
+      for (const alias of preset.aliases ?? []) {
+        names.add(alias);
+      }
 
       if (preset.source === "builtin") {
         const alias = getBuiltinAliasFromPath(preset.path);
@@ -254,6 +290,12 @@ export async function loadPreset(presetName: string): Promise<LoadedPreset> {
               resolvedPath = fullPath;
               break;
             }
+
+            const aliases = normalizeAliases(parsed.aliases);
+            if (hasAliasMatch(aliases, target)) {
+              resolvedPath = fullPath;
+              break;
+            }
           } catch {
             // Ignore invalid yaml while searching for a match.
           }
@@ -299,6 +341,12 @@ export async function loadPreset(presetName: string): Promise<LoadedPreset> {
             const parsed = parseYaml(content) as Record<string, unknown>;
 
             if (String(parsed.name ?? "").toLowerCase() === target) {
+              resolvedPath = fullPath;
+              break;
+            }
+
+            const aliases = normalizeAliases(parsed.aliases);
+            if (hasAliasMatch(aliases, target)) {
               resolvedPath = fullPath;
               break;
             }

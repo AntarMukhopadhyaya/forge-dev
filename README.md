@@ -33,10 +33,10 @@ Forge solves this by:
 
 ## Built-in Presets
 
-- next
+- express-ts-prisma-postgres
+- express-ts-drizzle-postgres
 - next-saas-pro
-- next-supabase-drizzle
-- expo
+- expo-nativewind-supabase
 - tanstack-start
 - mern-stack
 
@@ -99,8 +99,11 @@ Options:
 Examples:
 
 ```bash
-forge-dev init next my-app
 forge-dev init next-saas-pro my-saas-app
+forge-dev init express-ts-drizzle-postgres my-api
+forge-dev init expo-nativewind-supabase my-app
+forge-dev init ens my-app
+forge-dev init expo-nw my-app
 forge-dev init mern-stack my-app
 forge-dev init ./presets/my-team/preset.yaml team-app
 forge-dev init github.com/owner/custom-preset my-app --trust
@@ -127,7 +130,23 @@ Shows available presets with source and optional tags.
 Creates a custom preset module at:
 
 - `~/.forge/presets/custom/<name>/preset.yaml`
-- `~/.forge/presets/custom/<name>/templates/README.md.hbs`
+- `~/.forge/presets/custom/<name>/templates/README.md.tpl`
+
+### `forge-dev preset remove <name>`
+
+Removes matching custom preset entries by preset name or alias from custom preset directories.
+
+Important:
+
+- Built-in presets cannot be removed.
+- Only custom presets are removable.
+
+Examples:
+
+```bash
+forge-dev preset remove next-app
+forge-dev preset remove my-team-starter
+```
 
 ### `forge-dev doctor`
 
@@ -171,6 +190,16 @@ src/presets/builtins/<preset>/
   preset.yaml
   templates/
   meta.json (optional)
+```
+
+Preset aliases can be declared directly in `preset.yaml`:
+
+```yaml
+name: expo-nativewind-supabase
+aliases:
+  - ens
+  - expo-nw
+  - expo-nativewind
 ```
 
 Benefits:

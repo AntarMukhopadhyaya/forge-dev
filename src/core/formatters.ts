@@ -2,11 +2,19 @@ import path from "path";
 import { execa } from "execa";
 import { ensureDoctorProfile } from "./doctor.js";
 import { logger } from "./logger.js";
+import fs from "fs-extra";
 
 type FormatterName = "prettier" | "black" | "gofmt" | "google-java-format";
 
 const warnedMissing = new Set<FormatterName>();
 const warnedFailed = new Set<FormatterName>();
+
+function getLocalPrettierCommand(): string | null {
+  const bin = process.platform === "win32" ? "prettier.cmd" : "prettier";
+  const localPath = path.join(process.cwd(), "node_modules", ".bin", bin);
+
+  return fs.existsSync(localPath) ? localPath : null;
+}
 
 export function getFormatterForFile(filePath: string): FormatterName | null {
   const ext = path.extname(filePath).toLowerCase();
@@ -30,9 +38,15 @@ export function getFormatterForFile(filePath: string): FormatterName | null {
   }
 }
 
-async function runFormatter(formatter: FormatterName, filePath: string): Promise<void> {
+async function runFormatter(
+  formatter: FormatterName,
+  filePath: string,
+  commandOverride?: string,
+): Promise<void> {
   if (formatter === "prettier") {
-    await execa("prettier", ["--write", filePath], { stdio: "pipe" });
+    await execa(commandOverride ?? "prettier", ["--write", filePath], {
+      stdio: "pipe",
+    });
     return;
   }
 
@@ -54,6 +68,52 @@ export async function formatGeneratedFile(filePath: string): Promise<void> {
   if (!formatter) return;
 
   const profile = await ensureDoctorProfile({ quiet: true });
+
+  if (formatter === "prettier") {
+    const localPrettier = getLocalPrettierCommand();
+    let lastError: unknown = null;
+
+    if (localPrettier) {
+      try {
+        await runFormatter("prettier", filePath, localPrettier);
+        logger.verbose(`Formatted ${filePath} with local prettier`);
+        return;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    const globalPrettierInstalled = profile.formatters.prettier?.installed === true;
+
+    if (globalPrettierInstalled) {
+      try {
+        await runFormatter("prettier", filePath);
+        logger.verbose(`Formatted ${filePath} with prettier`);
+        return;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    if (!localPrettier && !globalPrettierInstalled) {
+      if (!warnedMissing.has("prettier")) {
+        warnedMissing.add("prettier");
+        logger.warn(
+          `prettier not found in local project or environment, skipping formatting for ${filePath}`,
+        );
+      }
+      return;
+    }
+
+    if (!warnedFailed.has("prettier")) {
+      warnedFailed.add("prettier");
+      const message = lastError instanceof Error ? lastError.message : String(lastError);
+      logger.warn(`prettier failed for ${filePath}, skipping formatting (${message})`);
+    }
+
+    return;
+  }
+
   const installed = profile.formatters[formatter]?.installed === true;
 
   if (!installed) {

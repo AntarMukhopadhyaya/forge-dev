@@ -4,3 +4,4 @@ my-app
 tanstack-debug-app
 coverage
 *.log
+*.tpl

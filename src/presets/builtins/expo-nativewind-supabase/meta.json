@@ -1,0 +1,5 @@
+{
+  "name": "expo-nativewind-supabase",
+  "tags": ["react-native", "expo-router", "nativewind", "supabase"],
+  "description": "Expo tabs (file-based routing, TypeScript) with NativeWind and Supabase"
+}

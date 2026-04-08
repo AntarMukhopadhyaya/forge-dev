@@ -1,0 +1,53 @@
+name: expo-nativewind-supabase
+aliases: [ens, expo-nw, expo-nativewind]
+description: "Expo tabs (file-based routing, TypeScript) with NativeWind and Supabase"
+version: "1.0"
+runtime: node
+packageManager: npm
+
+variables:
+  project:
+    type: string
+    prompt: "Project name"
+    default: "my-mobile-app"
+
+steps:
+  - run: npx create-expo-app@latest . --template tabs --yes
+  - run: npx expo install @supabase/supabase-js @react-native-async-storage/async-storage react-native-url-polyfill nativewind react-native-reanimated react-native-safe-area-context
+  - install:
+      deps: [tailwindcss, prettier, prettier-plugin-tailwindcss, babel-preset-expo]
+      dev: true
+  - file:
+      path: global.css
+      template: ./templates/global.css.tpl
+  - file:
+      path: tailwind.config.js
+      template: ./templates/tailwind.config.js.tpl
+  - file:
+      path: metro.config.js
+      template: ./templates/metro.config.js.tpl
+  - file:
+      path: babel.config.js
+      template: ./templates/babel.config.js.tpl
+  - file:
+      path: eslint.config.js
+      template: ./templates/eslint.config.js.tpl
+  - file:
+      path: nativewind-env.d.ts
+      template: ./templates/nativewind-env.d.ts.tpl
+  - file:
+      path: lib/supabase.ts
+      template: ./templates/supabase.ts.tpl
+  - file:
+      path: app/_layout.tsx
+      template: ./templates/layout.tsx.tpl
+  - file:
+      path: app/(tabs)/index.tsx
+      template: ./templates/home.tsx.tpl
+  - env:
+      EXPO_PUBLIC_SUPABASE_URL: "your-supabase-url"
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: "your-supabase-anon-key"
+
+postRun:
+  - "cd {{project}}"
+  - "npm run start"

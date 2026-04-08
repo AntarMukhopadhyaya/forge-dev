@@ -32,10 +32,10 @@ steps:
   - run: mkdir backend
   - file:
       path: backend/package.json
-      template: ./templates/backend.package.json.hbs
+      template: ./templates/backend.package.json.tpl
   - file:
       path: backend/index.ts
-      template: ./templates/backend/index.ts.hbs
+      template: ./templates/backend/index.ts.tpl
       vars:
         mongoUri: "{{mongoUri}}"
         apiPort: "{{apiPort}}"
@@ -43,24 +43,24 @@ steps:
   - run: cd backend && npm install -D typescript @types/node @types/express @types/cors @types/morgan
   - file:
       path: package.json
-      template: ./templates/root.package.json.hbs
+      template: ./templates/root.package.json.tpl
       vars:
         project: "{{project}}"
   - run: npm install -D concurrently
   - file:
       path: backend/.env
-      template: ./templates/backend.env.hbs
+      template: ./templates/backend.env.tpl
       vars:
         mongoUri: "{{mongoUri}}"
         apiPort: "{{apiPort}}"
   - file:
       path: frontend/.env
-      template: ./templates/frontend.env.hbs
+      template: ./templates/frontend.env.tpl
       vars:
         viteApiBaseUrl: "{{viteApiBaseUrl}}"
   - file:
       path: frontend/vite.config.ts
-      template: ./templates/vite.config.ts.hbs
+      template: ./templates/vite.config.ts.tpl
       vars:
         viteApiBaseUrl: "{{viteApiBaseUrl}}"
         apiPort: "{{apiPort}}"

@@ -53,6 +53,7 @@ const Variable = z.discriminatedUnion("type", [VariableChoice, VariableString]);
 
 export const PresetSchema = z.object({
   name: z.string(),
+  aliases: z.array(z.string().min(1)).optional(),
   description: z.string().optional(),
   version: z.string().optional(),
   runtime: z.enum(["node", "python", "go"]),

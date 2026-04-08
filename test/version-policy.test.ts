@@ -14,7 +14,7 @@ test("MERN root template does not pin npm dependency versions", async () => {
     "builtins",
     "mern-stack",
     "templates",
-    "root.package.json.hbs",
+    "root.package.json.tpl",
   );
 
   const content = await fs.readFile(templatePath, "utf-8");

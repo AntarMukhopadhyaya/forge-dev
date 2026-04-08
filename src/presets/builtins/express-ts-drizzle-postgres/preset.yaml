@@ -1,0 +1,100 @@
+name: express-ts-drizzle-postgres
+description: "Express API in TypeScript with Drizzle ORM, PostgreSQL, and Zod"
+version: "1.0"
+aliases: [express-ts-postgres, express-drizzle, edrizzle]
+runtime: node
+packageManager: npm
+
+variables:
+  project:
+    type: string
+    prompt: "Project name"
+    default: "my-api"
+
+  port:
+    type: string
+    prompt: "API port"
+    default: "4000"
+
+  databaseUrl:
+    type: string
+    prompt: "PostgreSQL connection string"
+    default: "postgresql://postgres:postgres@localhost:5432/forge_express?schema=public"
+
+steps:
+  - file:
+      path: package.json
+      template: ./templates/package.json.tpl
+      vars:
+        project: "{{project}}"
+  - install:
+      deps: [express, cors, helmet, morgan, zod, dotenv, drizzle-orm, pg]
+  - install:
+      deps:
+        [
+          typescript,
+          tsx,
+          drizzle-kit,
+          "@types/node",
+          "@types/express",
+          "@types/cors",
+          "@types/pg",
+          "@types/morgan",
+        ]
+      dev: true
+  - file:
+      path: tsconfig.json
+      template: ./templates/tsconfig.json.tpl
+  - file:
+      path: drizzle.config.ts
+      template: ./templates/drizzle.config.ts.tpl
+  - file:
+      path: src/db/schema.ts
+      template: ./templates/schema.ts.tpl
+  - file:
+      path: src/lib/db.ts
+      template: ./templates/db.ts.tpl
+  - file:
+      path: src/index.ts
+      template: ./templates/index.ts.tpl
+      vars:
+        port: "{{port}}"
+  - file:
+      path: src/middleware/error-handler.ts
+      template: ./templates/error-handler.ts.tpl
+  - file:
+      path: src/middleware/validate.ts
+      template: ./templates/validate.ts.tpl
+  - file:
+      path: src/routes/health.ts
+      template: ./templates/health.ts.tpl
+  - file:
+      path: src/routes/users.ts
+      template: ./templates/users.ts.tpl
+  - file:
+      path: .env.example
+      template: ./templates/env.example.tpl
+      vars:
+        port: "{{port}}"
+        databaseUrl: "{{databaseUrl}}"
+  - file:
+      path: .gitignore
+      template: ./templates/gitignore.tpl
+  - file:
+      path: README.md
+      template: ./templates/README.md.tpl
+      vars:
+        project: "{{project}}"
+  - file:
+      path: requests.http
+      template: ./templates/requests.http.tpl
+      vars:
+        port: "{{port}}"
+  - env:
+      DATABASE_URL: "{{databaseUrl}}"
+      PORT: "{{port}}"
+
+postRun:
+  - "npm run db:generate"
+  - "npm run db:migrate"
+  - "npm run dev"

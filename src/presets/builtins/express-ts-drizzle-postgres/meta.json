@@ -1,0 +1,5 @@
+{
+  "name": "express-ts-drizzle-postgres",
+  "tags": ["backend", "express", "typescript", "drizzle", "postgres"],
+  "description": "Express API in TypeScript with Drizzle ORM, PostgreSQL, and Zod"
+}

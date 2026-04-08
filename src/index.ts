@@ -3,7 +3,7 @@
 import { Command } from "commander";
 import { initCommand } from "./commands/init.js";
 import { getAvailablePresetsWithMeta } from "./core/engine.js";
-import { createPresetCommand } from "./commands/preset.js";
+import { createPresetCommand, removePresetCommand } from "./commands/preset.js";
 import chalk from "chalk";
 import { ensureDoctorProfile } from "./core/doctor.js";
 import { doctorCommand } from "./commands/doctor.js";
@@ -34,17 +34,21 @@ ${chalk.bold("Available presets")}
     const description = chalk.gray(preset.description);
     const source =
       preset.source === "custom" ? chalk.yellow("[custom]") : chalk.gray("[builtin]");
+    const aliases =
+      preset.aliases && preset.aliases.length > 0
+        ? chalk.blue(`[aliases: ${preset.aliases.join(", ")}]`)
+        : "";
     const tags =
       preset.tags && preset.tags.length > 0
         ? chalk.magenta(`[${preset.tags.join(", ")}]`)
         : "";
 
-    console.log(`  ${name}${source} ${description} ${tags}`.trimEnd());
+    console.log(`  ${name}${source} ${description} ${aliases} ${tags}`.trimEnd());
   });
 
   console.log(`
 ${chalk.bold("Example")}
-  ${chalk.cyan("forge-dev init next my-app")}
+  ${chalk.cyan("forge-dev init ens my-app")}
 `);
 }
 
@@ -79,12 +83,17 @@ program
 // ================= LIST COMMAND =================
 program.command("list").description("Show available presets").action(renderPresetList);
 
-program
-  .command("preset")
-  .description("Manage custom presets")
+const presetCommand = program.command("preset").description("Manage custom presets");
+
+presetCommand
   .command("new <name>")
   .description("Create a new custom preset in ~/.forge/presets/custom")
   .action(createPresetCommand);
+
+presetCommand
+  .command("remove <name>")
+  .description("Remove a custom preset by name or alias")
+  .action(removePresetCommand);
 
 program
   .command("doctor")
@@ -96,7 +105,7 @@ program
 if (process.argv.length <= 2) {
   renderHeader();
   console.log(`${chalk.bold("Get started")}
-  ${chalk.cyan("forge-dev init next my-app")}
+  ${chalk.cyan("forge-dev init ens my-app")}
 
 ${chalk.bold("Browse presets")}
   ${chalk.cyan("forge-dev list")}

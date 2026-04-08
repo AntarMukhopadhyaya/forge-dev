@@ -37,13 +37,13 @@ runtime: node
 steps:
   - file:
       path: README.md
-      template: ./templates/README.md.hbs
+      template: ./templates/README.md.tpl
 `,
       "utf-8",
     );
 
     await fs.writeFile(
-      path.join(sourceDir, "templates", "README.md.hbs"),
+      path.join(sourceDir, "templates", "README.md.tpl"),
       "# {{project}}",
       "utf-8",
     );
@@ -53,7 +53,7 @@ steps:
     const cachedTemplate = path.join(
       path.dirname(cached.storedPresetPath),
       "templates",
-      "README.md.hbs",
+      "README.md.tpl",
     );
 
     assert.equal(await fs.pathExists(cached.storedPresetPath), true);

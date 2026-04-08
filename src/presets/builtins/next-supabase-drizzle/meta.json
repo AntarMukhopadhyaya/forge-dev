@@ -1,5 +1,0 @@
-{
-  "name": "next-supabase-drizzle",
-  "tags": ["nextjs", "supabase", "drizzle"],
-  "description": "Next.js with Drizzle and Supabase configured out of the box"
-}
