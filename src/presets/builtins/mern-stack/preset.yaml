@@ -26,7 +26,7 @@ variables:
     default: "/api"
 
 steps:
-  - run: npm create vite@latest frontend -- --template react-ts --no-install
+  - run: npx create-vite@latest frontend --template react-ts --no-install --no-interactive
   - run: cd frontend && npm install
   - run: cd frontend && npm install -D @vitejs/plugin-react @tailwindcss/vite tailwindcss
   - run: mkdir backend

@@ -254,6 +254,37 @@ test("express-ts-drizzle-postgres installs Drizzle packages and avoids Prisma", 
   assert.equal(hasPrismaDep, false);
 });
 
+test("mern-stack root package template is valid JSON", async () => {
+  const templatePath = path.join(
+    process.cwd(),
+    "src",
+    "presets",
+    "builtins",
+    "mern-stack",
+    "templates",
+    "root.package.json.tpl",
+  );
+
+  const template = await fs.readFile(templatePath, "utf-8");
+  const concrete = template.replace("{{project}}", "my-app");
+
+  assert.doesNotThrow(() => JSON.parse(concrete));
+});
+
+test("mern-stack vite bootstrap command is non-interactive", async () => {
+  const preset = await loadPreset("mern-stack");
+  const firstRunStep = preset.steps.find((step) => "run" in step);
+
+  assert.ok(firstRunStep && "run" in firstRunStep);
+  if (!firstRunStep || !("run" in firstRunStep)) {
+    return;
+  }
+
+  assert.ok(firstRunStep.run.includes("npx create-vite@latest frontend"));
+  assert.ok(firstRunStep.run.includes("--no-install"));
+  assert.ok(firstRunStep.run.includes("--no-interactive"));
+});
+
 test("custom preset can use local templates next to the yaml", async () => {
   const originalCwd = process.cwd();
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-local-template-"));
