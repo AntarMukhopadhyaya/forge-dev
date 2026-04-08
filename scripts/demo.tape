@@ -2,20 +2,23 @@ Output demo.gif
 
 Set Shell "powershell"
 Set FontSize 16
-Set Width 1200
-Set Height 720
+Set Width 1400
+Set Height 820
 Set Theme "Dracula"
+Set TypingSpeed 85
 
-Type "forge list"
+Type "cd .."
+Enter
+Sleep 1s
+
+Type "npx --yes @antardev/forge-dev@latest list"
+Enter
+Sleep 4s
+
+Type "npx --yes @antardev/forge-dev@latest -V"
 Enter
 Sleep 2s
 
-Type "forge init next-saas-pro my-app"
+Type "npx --yes @antardev/forge-dev@latest init ens my-ens-app --yes"
 Enter
-Sleep 3s
-
-Type "cd my-app"
-Enter
-Type "npm run dev"
-Enter
-Sleep 2s
+Sleep 10s
