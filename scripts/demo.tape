@@ -2,7 +2,7 @@ Output demo.gif
 
 Set Shell "bash"
 Set FontFamily "Fira Code"
-Set FontSize 16
+Set FontSize 18
 Set Width 1200
 Set Height 720
 Set Theme "Dracula"

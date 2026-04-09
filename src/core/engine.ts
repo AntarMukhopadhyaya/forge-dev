@@ -92,7 +92,7 @@ function getBuiltinAliasFromPath(fullPath: string): string | null {
   return null;
 }
 
-function readBuiltinMetaFile(presetPath: string): BuiltinMetaFile | null {
+function readPresetMetaFile(presetPath: string): BuiltinMetaFile | null {
   const base = path.basename(presetPath).toLowerCase();
   if (base !== "preset.yaml" && base !== "preset.yml") {
     return null;
@@ -150,7 +150,7 @@ function getAllPresetMeta(): PresetMeta[] {
       try {
         const content = fs.readFileSync(fullPath, "utf-8");
         const parsed = parseYaml(content) as Record<string, unknown>;
-        const metaFile = readBuiltinMetaFile(fullPath);
+        const metaFile = readPresetMetaFile(fullPath);
         const metaName = typeof metaFile?.name === "string" ? metaFile.name : undefined;
         const metaDescription =
           typeof metaFile?.description === "string" ? metaFile.description : undefined;
@@ -187,12 +187,20 @@ function getAllPresetMeta(): PresetMeta[] {
       try {
         const content = fs.readFileSync(fullPath, "utf-8");
         const parsed = parseYaml(content) as Record<string, unknown>;
+        const metaFile = readPresetMetaFile(fullPath);
+        const metaName = typeof metaFile?.name === "string" ? metaFile.name : undefined;
+        const metaDescription =
+          typeof metaFile?.description === "string" ? metaFile.description : undefined;
+        const tags = Array.isArray(metaFile?.tags)
+          ? metaFile.tags.filter((tag): tag is string => typeof tag === "string")
+          : undefined;
         const aliases = normalizeAliases(parsed.aliases);
 
         all.push({
-          name: String(parsed.name ?? path.parse(fullPath).name),
+          name: String(metaName ?? parsed.name ?? path.parse(fullPath).name),
           aliases: aliases.length > 0 ? aliases : undefined,
-          description: String(parsed.description ?? "No description"),
+          description: String(metaDescription ?? parsed.description ?? "No description"),
+          tags,
           source: "custom",
           path: fullPath,
         });

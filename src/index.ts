@@ -3,7 +3,11 @@
 import { Command } from "commander";
 import { initCommand } from "./commands/init.js";
 import { getAvailablePresetsWithMeta } from "./core/engine.js";
-import { createPresetCommand, removePresetCommand } from "./commands/preset.js";
+import {
+  createPresetCommand,
+  removePresetCommand,
+  scaffoldPresetCommand,
+} from "./commands/preset.js";
 import chalk from "chalk";
 import { ensureDoctorProfile } from "./core/doctor.js";
 import { doctorCommand } from "./commands/doctor.js";
@@ -58,6 +62,15 @@ program
   .description(chalk.gray("Scaffold modern dev stacks, fast and clean"))
   .version(pkg.version);
 
+program.addHelpText(
+  "after",
+  `
+${chalk.bold("Bring your own preset")}
+  ${chalk.cyan("forge-dev scaffold my-team-api")}
+  ${chalk.cyan("forge-dev init my-team-api my-app")}
+`,
+);
+
 program.hook("preAction", async (_thisCommand, actionCommand) => {
   if (actionCommand.name() === "doctor") {
     return;
@@ -83,12 +96,22 @@ program
 // ================= LIST COMMAND =================
 program.command("list").description("Show available presets").action(renderPresetList);
 
+program
+  .command("scaffold <name>")
+  .description("Bring your own preset by scaffolding one in ./presets/custom")
+  .action(scaffoldPresetCommand);
+
 const presetCommand = program.command("preset").description("Manage custom presets");
 
 presetCommand
   .command("new <name>")
   .description("Create a new custom preset in ~/.forge/presets/custom")
   .action(createPresetCommand);
+
+presetCommand
+  .command("scaffold <name>")
+  .description("Scaffold a custom preset in ./presets/custom for local editing")
+  .action(scaffoldPresetCommand);
 
 presetCommand
   .command("remove <name>")
@@ -109,6 +132,10 @@ if (process.argv.length <= 2) {
 
 ${chalk.bold("Browse presets")}
   ${chalk.cyan("forge-dev list")}
+
+${chalk.bold("Bring your own preset")}
+  ${chalk.cyan("forge-dev scaffold my-team-api")}
+  ${chalk.cyan("forge-dev init my-team-api my-app")}
 
 ${chalk.gray("Tip: use --dry-run to preview changes before writing files.")}
 `);

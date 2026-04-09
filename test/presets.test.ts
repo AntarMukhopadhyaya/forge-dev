@@ -8,6 +8,7 @@ import {
   createPresetCommand,
   isBuiltinPresetIdentifier,
   removePresetCommand,
+  scaffoldPresetCommand,
 } from "../src/commands/preset.js";
 
 async function getBuiltInPresetAliases(): Promise<string[]> {
@@ -417,21 +418,57 @@ test("preset scaffold command creates yaml file under presets", async () => {
       "templates",
       "README.md.tpl",
     );
+    const metaFile = path.join(
+      tempDir,
+      "presets",
+      "custom",
+      "my-team-starter",
+      "meta.json",
+    );
     const exists = await fs.pathExists(filePath);
     const templateExists = await fs.pathExists(templateFile);
+    const metaExists = await fs.pathExists(metaFile);
     assert.equal(exists, true);
     assert.equal(templateExists, true);
+    assert.equal(metaExists, true);
 
     const content = await fs.readFile(filePath, "utf-8");
+    const metaContent = await fs.readFile(metaFile, "utf-8");
     assert.match(content, /name: my-team-starter/);
     assert.match(content, /template: \.\/templates\/README\.md\.tpl/);
     assert.match(content, /runtime: node/);
+    assert.match(metaContent, /"name": "my-team-starter"/);
   } finally {
     if (originalForgeHome === undefined) {
       delete process.env.FORGE_HOME;
     } else {
       process.env.FORGE_HOME = originalForgeHome;
     }
+    await fs.remove(tempDir);
+  }
+});
+
+test("preset scaffold command creates workspace-local preset module", async () => {
+  const originalCwd = process.cwd();
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-preset-scaffold-"));
+
+  try {
+    process.chdir(tempDir);
+    await scaffoldPresetCommand("Workspace Starter");
+
+    const presetDir = path.join(tempDir, "presets", "custom", "workspace-starter");
+    const presetFile = path.join(presetDir, "preset.yaml");
+    const templateFile = path.join(presetDir, "templates", "README.md.tpl");
+    const metaFile = path.join(presetDir, "meta.json");
+
+    assert.equal(await fs.pathExists(presetFile), true);
+    assert.equal(await fs.pathExists(templateFile), true);
+    assert.equal(await fs.pathExists(metaFile), true);
+
+    const loaded = await loadPreset("workspace-starter");
+    assert.equal(loaded.name, "workspace-starter");
+  } finally {
+    process.chdir(originalCwd);
     await fs.remove(tempDir);
   }
 });

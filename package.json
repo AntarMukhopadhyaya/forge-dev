@@ -14,7 +14,7 @@
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "npm run clean && tsc && npm run copy-assets",
     "copy-assets": "copyfiles -u 1 \"src/templates/**/*\" dist && copyfiles -u 1 \"src/presets/builtins/**/*\" dist",
-    "test": "node --import tsx --test test/presets.test.ts test/prompts.test.ts test/remote-presets.test.ts test/version-policy.test.ts test/doctor.test.ts test/runtime.test.ts test/formatters.test.ts",
+    "test": "node --import tsx --test test/presets.test.ts test/commands.test.ts test/prompts.test.ts test/remote-presets.test.ts test/version-policy.test.ts test/doctor.test.ts test/runtime.test.ts test/formatters.test.ts",
     "dev": "tsx src/index.ts",
     "lint": "eslint src test --max-warnings=0",
     "lint:fix": "npm run lint -- --fix",

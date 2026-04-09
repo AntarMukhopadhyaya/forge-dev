@@ -27,6 +27,86 @@ function normalizeAliases(value: unknown): string[] {
     .filter(Boolean);
 }
 
+function getWorkspaceCustomPresetDir(cwd: string = process.cwd()): string {
+  return path.join(cwd, "presets", "custom");
+}
+
+function buildStarterPresetYaml(presetName: string): string {
+  return `name: ${presetName}
+description: "Custom preset created with Forge"
+version: "1.0"
+runtime: node
+packageManager: npm
+
+variables:
+  project:
+    type: string
+    prompt: "Project name"
+    default: "my-app"
+
+steps:
+  - run: npm init -y
+  - file:
+      path: README.md
+      template: ./templates/README.md.tpl
+      vars:
+        project: "{{project}}"
+
+postRun:
+  - "cd {{project}}"
+  - "npm run dev"
+`;
+}
+
+function buildStarterMetaJson(presetName: string): string {
+  return `${JSON.stringify(
+    {
+      name: presetName,
+      description: "Custom preset created with Forge",
+      tags: ["custom"],
+    },
+    null,
+    2,
+  )}\n`;
+}
+
+function buildStarterTemplate(): string {
+  return `# {{project}}
+
+Generated with Forge custom preset \`{{project}}\`.
+`;
+}
+
+async function scaffoldPresetModule(
+  name: string,
+  rootDir: string,
+  opts: { locationLabel: string; commandExample: string },
+) {
+  const safeName = toKebabCase(name);
+
+  if (!safeName) {
+    throw new ForgeError("Preset name must include at least one letter or number.");
+  }
+
+  const presetDir = path.join(rootDir, safeName);
+  const presetPath = path.join(presetDir, "preset.yaml");
+  const metaPath = path.join(presetDir, "meta.json");
+  const templateDir = path.join(presetDir, "templates");
+  const templateFile = path.join(templateDir, "README.md.tpl");
+
+  if (await fs.pathExists(presetDir)) {
+    throw new ForgeError(`Preset already exists: ${presetDir}`);
+  }
+
+  await fs.ensureDir(templateDir);
+  await fs.writeFile(presetPath, buildStarterPresetYaml(safeName), "utf-8");
+  await fs.writeFile(metaPath, buildStarterMetaJson(safeName), "utf-8");
+  await fs.writeFile(templateFile, buildStarterTemplate(), "utf-8");
+
+  console.log(chalk.green(`✔ Created ${opts.locationLabel} preset: ${presetPath}`));
+  console.log(chalk.gray(`Run it with: ${opts.commandExample}`));
+}
+
 export function isBuiltinPresetIdentifier(identifier: string): boolean {
   const needle = identifier.trim().toLowerCase();
   if (!needle) return false;
@@ -89,63 +169,34 @@ async function findMatchingCustomPresetFiles(identifier: string): Promise<string
 export async function createPresetCommand(name: string) {
   try {
     const safeName = toKebabCase(name);
-
-    if (!safeName) {
-      throw new ForgeError("Preset name must include at least one letter or number.");
-    }
-
-    const presetsDir = getForgeCustomPresetDir();
-    const presetDir = path.join(presetsDir, safeName);
-    const presetPath = path.join(presetDir, "preset.yaml");
-    const templateDir = path.join(presetDir, "templates");
-    const templateFile = path.join(templateDir, "README.md.tpl");
-
-    if (await fs.pathExists(presetDir)) {
-      throw new ForgeError(`Preset already exists: ${presetDir}`);
-    }
-
-    const starter = `name: ${safeName}
-description: "Custom preset created with Forge"
-version: "1.0"
-runtime: node
-packageManager: npm
-
-variables:
-  project:
-    type: string
-    prompt: "Project name"
-    default: "my-app"
-
-steps:
-  - run: npm init -y
-  - file:
-      path: README.md
-      template: ./templates/README.md.tpl
-      vars:
-        project: "{{project}}"
-
-postRun:
-  - "cd {{project}}"
-  - "npm run dev"
-`;
-
-    const starterTemplate = `# {{project}}
-
-Generated with Forge custom preset \`{{project}}\`.
-`;
-
-    await fs.ensureDir(templateDir);
-    await fs.writeFile(presetPath, starter, "utf-8");
-    await fs.writeFile(templateFile, starterTemplate, "utf-8");
-
-    console.log(chalk.green(`✔ Created custom preset: ${presetPath}`));
-    console.log(chalk.gray("Run it with: forge-dev init " + safeName + " my-app"));
+    await scaffoldPresetModule(name, getForgeCustomPresetDir(), {
+      locationLabel: "custom",
+      commandExample: `forge-dev init ${safeName} my-app`,
+    });
   } catch (error) {
     if (error instanceof ForgeError) {
       console.error(chalk.red(`✖ ${error.message}`));
     } else {
       const msg = error instanceof Error ? error.message : String(error);
       console.error(chalk.red(`✖ Failed to create preset: ${msg}`));
+    }
+    process.exit(1);
+  }
+}
+
+export async function scaffoldPresetCommand(name: string) {
+  try {
+    const safeName = toKebabCase(name);
+    await scaffoldPresetModule(name, getWorkspaceCustomPresetDir(), {
+      locationLabel: "workspace",
+      commandExample: `forge-dev init ${safeName} my-app`,
+    });
+  } catch (error) {
+    if (error instanceof ForgeError) {
+      console.error(chalk.red(`✖ ${error.message}`));
+    } else {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`✖ Failed to scaffold preset: ${msg}`));
     }
     process.exit(1);
   }

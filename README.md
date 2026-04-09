@@ -47,6 +47,7 @@ Remote presets require the `--trust` flag to prevent accidental execution of unt
 ## Core Features
 
 - Built-in preset modules under `src/presets/builtins/<preset>/preset.yaml`.
+- Workspace custom preset modules under `./presets/custom/<preset>/preset.yaml`.
 - Custom preset modules under `~/.forge/presets/custom`.
 - Trusted remote preset import via `forge-dev init <github-url> --trust`.
 - Variable prompts with defaults and choice options.
@@ -130,7 +131,44 @@ Shows available presets with source and optional tags.
 Creates a custom preset module at:
 
 - `~/.forge/presets/custom/<name>/preset.yaml`
+- `~/.forge/presets/custom/<name>/meta.json`
 - `~/.forge/presets/custom/<name>/templates/README.md.tpl`
+
+### `forge-dev scaffold <name>`
+
+Top-level shortcut to bring your own preset by scaffolding a local preset module.
+
+Creates:
+
+- `./presets/custom/<name>/preset.yaml`
+- `./presets/custom/<name>/meta.json`
+- `./presets/custom/<name>/templates/README.md.tpl`
+
+Example:
+
+```bash
+forge-dev scaffold my-team-api
+forge-dev init my-team-api app-name
+```
+
+### `forge-dev preset scaffold <name>`
+
+Scaffolds a project-local preset module so you can edit templates and YAML in the same repo without context switching.
+
+This command remains available; it is equivalent to `forge-dev scaffold <name>`.
+
+Creates:
+
+- `./presets/custom/<name>/preset.yaml`
+- `./presets/custom/<name>/meta.json`
+- `./presets/custom/<name>/templates/README.md.tpl`
+
+Example:
+
+```bash
+forge-dev preset scaffold my-team-api
+forge-dev init my-team-api app-name
+```
 
 ### `forge-dev preset remove <name>`
 
@@ -192,6 +230,11 @@ src/presets/builtins/<preset>/
   meta.json (optional)
 ```
 
+Custom presets follow the same structure in either:
+
+- `./presets/custom/<preset>/`
+- `~/.forge/presets/custom/<preset>/`
+
 Preset aliases can be declared directly in `preset.yaml`:
 
 ```yaml
@@ -219,6 +262,102 @@ When running `forge-dev init <preset>`:
 5. built-in module: `src/presets/builtins/<name>/preset.yaml`
 
 If a preset path is used, Forge caches it for reuse by short name.
+
+## `preset.yaml` Reference
+
+Minimal example:
+
+```yaml
+name: my-team-api
+description: "Express + Drizzle API scaffold"
+version: "1.0"
+runtime: node
+packageManager: npm
+
+aliases:
+  - mta
+
+variables:
+  project:
+    type: string
+    prompt: "Project name"
+    default: "my-api"
+  database:
+    type: choice
+    prompt: "Database"
+    options: [postgres, mysql]
+    default: postgres
+
+steps:
+  - run: npm init -y
+  - install:
+      deps: [express, zod]
+  - install:
+      deps: [typescript, tsx]
+      dev: true
+  - file:
+      path: src/index.ts
+      template: ./templates/index.ts.tpl
+      vars:
+        appName: "{{project}}"
+  - env:
+      PORT: "3000"
+  - run: echo "Using Postgres"
+    if:
+      database: postgres
+
+postRun:
+  - npm run dev
+```
+
+Top-level fields:
+
+- `name`: Preset identifier.
+- `aliases`: Optional alternate names users can pass to `forge-dev init`.
+- `description`: Human-friendly description used in listing and metadata.
+- `version`: Optional preset version string for your own tracking.
+- `runtime`: Required runtime. Supported: `node`, `python`, `go`.
+- `packageManager`: Optional Node package manager override (`npm`, `pnpm`, `yarn`).
+- `variables`: Optional input variables collected before steps execute.
+- `steps`: Required ordered execution plan.
+- `postRun`: Optional commands shown as next-step hints.
+
+Variable formats:
+
+- `type: string`: Free-text input. Supports optional `prompt` and `default`.
+- `type: choice`: Select from `options`. Supports `prompt` and optional `default`.
+
+Supported `steps` entries:
+
+- `run`: Execute a shell command.
+- `cd`: Change working directory.
+- `install`: Install dependencies. Use `deps` array and optional `dev: true`.
+- `file`: Render a template file. Use `template` and optional `vars` map.
+- `env`: Set environment variables used by later steps.
+
+Conditional execution:
+
+- Any step can include an `if` object to match variable values before running.
+- Example: `if: { database: postgres }`.
+
+Template path behavior:
+
+- Paths beginning with `./` are resolved relative to the preset YAML file.
+- This keeps custom presets portable as self-contained modules.
+
+`meta.json` (optional but recommended):
+
+```json
+{
+  "name": "my-team-api",
+  "description": "Express + Drizzle API scaffold",
+  "tags": ["custom", "api"]
+}
+```
+
+- `name`: Display name override for list output.
+- `description`: Description override for list output.
+- `tags`: Optional tags shown in `forge-dev list`.
 
 ## Formatter Routing (Per Language)
 
