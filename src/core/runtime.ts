@@ -51,29 +51,39 @@ async function installPackages(
   if (customInstallCommand) {
     const commandLine = [customInstallCommand, ...packages].join(" ").trim();
     logger.info(`Installing packages: ${packages.join(", ")}...`);
-    await execa.command(commandLine, { stdio: "inherit" });
+    await execa(commandLine, { shell: true, stdio: "inherit" });
     return;
   }
 
   switch (runtime) {
     case "node": {
-      const packageManager = await resolveNodePackageManager(preset.packageManager);
+      const packageManager = toSupportedPackageManager(preset.packageManager);
 
-      if (packageManager === "npm") {
+      if (!packageManager) {
+        throw new ForgeError(`Unsupported package manager: ${preset.packageManager}`, {
+          step: {
+            install: { deps: packages, dev },
+          },
+        });
+      }
+
+      const resolvedPackageManager = await resolveNodePackageManager(packageManager);
+
+      if (resolvedPackageManager === "npm") {
         command = "npm";
         args = [
           "install",
           ...(dev ? ["--save-dev", "--include=dev"] : ["--save"]),
           ...packages,
         ];
-      } else if (packageManager === "pnpm") {
+      } else if (resolvedPackageManager === "pnpm") {
         command = "pnpm";
         args = ["add", ...(dev ? ["-D"] : []), ...packages];
-      } else if (packageManager === "yarn") {
+      } else if (resolvedPackageManager === "yarn") {
         command = "yarn";
         args = ["add", ...(dev ? ["-D"] : []), ...packages];
       } else {
-        throw new ForgeError(`Unsupported package manager: ${packageManager}`, {
+        throw new ForgeError(`Unsupported package manager: ${resolvedPackageManager}`, {
           step: {
             install: { deps: packages, dev },
           },
@@ -103,8 +113,21 @@ async function installPackages(
 async function resolveRunCommand(command: string, preset: LoadedPreset): Promise<string> {
   if (preset.runtime !== "node") return command;
 
-  const packageManager = await resolveNodePackageManager(preset.packageManager);
-  return rewriteNodeRunCommand(command, packageManager);
+  const packageManager = toSupportedPackageManager(preset.packageManager);
+  if (!packageManager) return command;
+
+  const resolvedPackageManager = await resolveNodePackageManager(packageManager);
+  return rewriteNodeRunCommand(command, resolvedPackageManager);
+}
+
+function toSupportedPackageManager(
+  value: string | undefined,
+): SupportedPackageManager | undefined {
+  if (value === "npm" || value === "pnpm" || value === "yarn") {
+    return value;
+  }
+
+  return undefined;
 }
 
 function rewriteNpmRunWithPrefix(

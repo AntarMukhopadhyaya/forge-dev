@@ -93,3 +93,15 @@ Template values come from variables and optional `file.vars`.
 
 Forge formats generated files by extension when formatter tools are available.
 If a formatter is missing, Forge warns and continues.
+
+## Deleting Presets
+
+Remove custom presets with:
+
+```bash
+npx @antardev/forge-dev preset remove my-team-api
+```
+
+You can remove custom presets by name or alias.
+
+Built-in presets cannot be deleted.
