@@ -4,6 +4,8 @@ Scaffold modern app stacks in seconds using reusable preset modules.
 
 No boilerplate. No lock-in. Just clean, repeatable setup.
 
+Docs: https://antarmukhopadhyaya.github.io/forge-dev/
+
 ---
 
 ## Demo
