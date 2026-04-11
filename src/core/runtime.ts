@@ -22,7 +22,7 @@ export async function executeStep(
     logger.verbose(`Changed directory to ${step.cd}`);
   } else if ("install" in step) {
     const { deps = [], dev = false } = step.install;
-    await installPackages(deps, preset, dev);
+    await installPackages(deps, preset, dev, step.install.command);
   } else if ("file" in step) {
     const { path: filePath, template: templateName, vars = {} } = step.file;
     await generateFileFromTemplate(filePath, templateName, preset.sourcePath, {
@@ -41,11 +41,20 @@ async function installPackages(
   packages: string[],
   preset: LoadedPreset,
   dev: boolean,
+  customInstallCommand?: string,
 ): Promise<void> {
   if (packages.length === 0) return;
   const { runtime } = preset;
   let command: string;
   let args: string[];
+
+  if (customInstallCommand) {
+    const commandLine = [customInstallCommand, ...packages].join(" ").trim();
+    logger.info(`Installing packages: ${packages.join(", ")}...`);
+    await execa.command(commandLine, { stdio: "inherit" });
+    return;
+  }
+
   switch (runtime) {
     case "node": {
       const packageManager = await resolveNodePackageManager(preset.packageManager);

@@ -13,7 +13,7 @@ No boilerplate. No lock-in. Just clean, repeatable setup.
 ## Quick Start
 
 ```bash
-npx forge-dev init next-saas-pro my-app
+npx @antardev/forge-dev init next-saas-pro my-app
 cd my-app
 npm run dev
 ```
@@ -29,7 +29,7 @@ Forge solves this by:
 - Running preset-driven scaffolding flows
 - Keeping presets portable and versionable
 - Supporting local and remote preset modules
-- Detecting your environment automatically with `forge-dev doctor`
+- Detecting your environment automatically with `npx @antardev/forge-dev doctor`
 
 ## Built-in Presets
 
@@ -49,9 +49,10 @@ Remote presets require the `--trust` flag to prevent accidental execution of unt
 - Built-in preset modules under `src/presets/builtins/<preset>/preset.yaml`.
 - Workspace custom preset modules under `./presets/custom/<preset>/preset.yaml`.
 - Custom preset modules under `~/.forge/presets/custom`.
-- Trusted remote preset import via `forge-dev init <github-url> --trust`.
+- Trusted remote preset import via `npx @antardev/forge-dev init <github-url> --trust`.
 - Variable prompts with defaults and choice options.
 - Conditional steps via `if` in preset steps.
+- Generic runtime metadata for non-Node presets, including `language` and custom install commands.
 - Template rendering via Handlebars.
 - Per-language formatter routing with graceful fallback.
 - Doctor cache for runtime/package manager/formatter detection.
@@ -67,26 +68,26 @@ Remote presets require the `--trust` flag to prevent accidental execution of unt
 ### From npm (global)
 
 ```bash
-npm install -g forge-dev
-forge-dev --help
+npm install -g @antardev/forge-dev
+npx @antardev/forge-dev --help
 ```
 
 ### Local development
 
 ```bash
 npm install
-npm run dev -- list
+npx @antardev/forge-dev list
 ```
 
 Dry run first when trying a new preset:
 
 ```bash
-forge-dev init mern-stack my-app --dry-run
+npx @antardev/forge-dev init mern-stack my-app --dry-run
 ```
 
 ## Commands
 
-### `forge-dev init <preset> [project-name]`
+### `npx @antardev/forge-dev init <preset> [project-name]`
 
 Scaffold a project from a preset.
 
@@ -100,14 +101,14 @@ Options:
 Examples:
 
 ```bash
-forge-dev init next-saas-pro my-saas-app
-forge-dev init express-ts-drizzle-postgres my-api
-forge-dev init expo-nativewind-supabase my-app
-forge-dev init ens my-app
-forge-dev init expo-nw my-app
-forge-dev init mern-stack my-app
-forge-dev init ./presets/my-team/preset.yaml team-app
-forge-dev init github.com/owner/custom-preset my-app --trust
+npx @antardev/forge-dev init next-saas-pro my-saas-app
+npx @antardev/forge-dev init express-ts-drizzle-postgres my-api
+npx @antardev/forge-dev init expo-nativewind-supabase my-app
+npx @antardev/forge-dev init ens my-app
+npx @antardev/forge-dev init expo-nw my-app
+npx @antardev/forge-dev init mern-stack my-app
+npx @antardev/forge-dev init ./presets/my-team/preset.yaml team-app
+npx @antardev/forge-dev init github.com/owner/custom-preset my-app --trust
 ```
 
 Example output:
@@ -122,11 +123,11 @@ Next steps:
 4. Start development
 ```
 
-### `forge-dev list`
+### `npx @antardev/forge-dev list`
 
 Shows available presets with source and optional tags.
 
-### `forge-dev preset new <name>`
+### `npx @antardev/forge-dev preset new <name>`
 
 Creates a custom preset module at:
 
@@ -134,10 +135,21 @@ Creates a custom preset module at:
 - `~/.forge/presets/custom/<name>/meta.json`
 - `~/.forge/presets/custom/<name>/templates/README.md.tpl`
 
-### `forge-dev scaffold <name>`
+### `npx @antardev/forge-dev scaffold <name>`
 
 Top-level shortcut to bring your own preset by scaffolding a local preset module.
 
+When run in an interactive terminal, Forge prompts for the runtime and related
+stack settings. Use `--yes` to skip prompts and accept defaults.
+
+Flags:
+
+- `-y, --yes`: skip prompts and use defaults.
+- `--runtime <runtime>`: record the target runtime in the starter YAML.
+- `--language <language>`: record the language in the starter YAML.
+- `--package-manager <package-manager>`: record the package manager in the starter YAML.
+- `--install-command <command>`: set a custom installer command prefix for install steps.
+
 Creates:
 
 - `./presets/custom/<name>/preset.yaml`
@@ -147,15 +159,15 @@ Creates:
 Example:
 
 ```bash
-forge-dev scaffold my-team-api
-forge-dev init my-team-api app-name
+npx @antardev/forge-dev scaffold my-team-api
+npx @antardev/forge-dev init my-team-api app-name
 ```
 
-### `forge-dev preset scaffold <name>`
+### `npx @antardev/forge-dev preset scaffold <name>`
 
 Scaffolds a project-local preset module so you can edit templates and YAML in the same repo without context switching.
 
-This command remains available; it is equivalent to `forge-dev scaffold <name>`.
+This command remains available; it is equivalent to `npx @antardev/forge-dev scaffold <name>`.
 
 Creates:
 
@@ -166,11 +178,11 @@ Creates:
 Example:
 
 ```bash
-forge-dev preset scaffold my-team-api
-forge-dev init my-team-api app-name
+npx @antardev/forge-dev preset scaffold my-team-api
+npx @antardev/forge-dev init my-team-api app-name
 ```
 
-### `forge-dev preset remove <name>`
+### `npx @antardev/forge-dev preset remove <name>`
 
 Removes matching custom preset entries by preset name or alias from custom preset directories.
 
@@ -182,17 +194,17 @@ Important:
 Examples:
 
 ```bash
-forge-dev preset remove next-app
-forge-dev preset remove my-team-starter
+npx @antardev/forge-dev preset remove next-app
+npx @antardev/forge-dev preset remove my-team-starter
 ```
 
-### `forge-dev doctor`
+### `npx @antardev/forge-dev doctor`
 
 Shows detected local environment and writes cache to `~/.forge/doctor.json`.
 
 ```bash
-forge-dev doctor
-forge-dev doctor --refresh
+npx @antardev/forge-dev doctor
+npx @antardev/forge-dev doctor --refresh
 ```
 
 Doctor tracks:
@@ -253,7 +265,7 @@ Benefits:
 
 ## Preset Resolution Order
 
-When running `forge-dev init <preset>`:
+When running `npx @antardev/forge-dev init <preset>`:
 
 1. explicit path-like value (`/`, `\\`, `.yaml`, `.yml`)
 2. `./presets/<name>.yaml`
@@ -313,7 +325,7 @@ postRun:
 Top-level fields:
 
 - `name`: Preset identifier.
-- `aliases`: Optional alternate names users can pass to `forge-dev init`.
+- `aliases`: Optional alternate names users can pass to `npx @antardev/forge-dev init`.
 - `description`: Human-friendly description used in listing and metadata.
 - `version`: Optional preset version string for your own tracking.
 - `runtime`: Required runtime. Supported: `node`, `python`, `go`.
@@ -357,7 +369,7 @@ Template path behavior:
 
 - `name`: Display name override for list output.
 - `description`: Description override for list output.
-- `tags`: Optional tags shown in `forge-dev list`.
+- `tags`: Optional tags shown in `npx @antardev/forge-dev list`.
 
 ## Formatter Routing (Per Language)
 
@@ -388,21 +400,21 @@ For Node runtime presets:
 npm run lint
 npm test
 npm run build
-npm run dev -- list
+npx @antardev/forge-dev list
 ```
 
 ## Troubleshooting
 
 ### `Preset not found`
 
-- Run `forge-dev list`.
+- Run `npx @antardev/forge-dev list`.
 - Verify preset name/path.
 - Validate YAML syntax.
 
 ### Missing formatter warnings
 
 Expected when formatter tools are not installed globally.
-Install the formatter you want, then run `forge-dev doctor --refresh`.
+Install the formatter you want, then run `npx @antardev/forge-dev doctor --refresh`.
 
 ### Remote preset blocked
 

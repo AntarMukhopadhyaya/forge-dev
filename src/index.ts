@@ -99,19 +99,52 @@ program.command("list").description("Show available presets").action(renderPrese
 program
   .command("scaffold <name>")
   .description("Bring your own preset by scaffolding one in ./presets/custom")
-  .action(scaffoldPresetCommand);
+  .option("-y, --yes", "Skip prompts and use defaults")
+  .option("--runtime <runtime>", "Preset runtime to record in the starter YAML")
+  .option("--language <language>", "Language to record in the starter YAML")
+  .option(
+    "--package-manager <package-manager>",
+    "Package manager to record in the starter YAML",
+  )
+  .option(
+    "--install-command <command>",
+    "Installer command prefix to use for the starter YAML",
+  )
+  .action((name, options) => scaffoldPresetCommand(name, options));
 
 const presetCommand = program.command("preset").description("Manage custom presets");
 
 presetCommand
   .command("new <name>")
   .description("Create a new custom preset in ~/.forge/presets/custom")
-  .action(createPresetCommand);
+  .option("-y, --yes", "Skip prompts and use defaults")
+  .option("--runtime <runtime>", "Preset runtime to record in the starter YAML")
+  .option("--language <language>", "Language to record in the starter YAML")
+  .option(
+    "--package-manager <package-manager>",
+    "Package manager to record in the starter YAML",
+  )
+  .option(
+    "--install-command <command>",
+    "Installer command prefix to use for the starter YAML",
+  )
+  .action((name, options) => createPresetCommand(name, options));
 
 presetCommand
   .command("scaffold <name>")
   .description("Scaffold a custom preset in ./presets/custom for local editing")
-  .action(scaffoldPresetCommand);
+  .option("-y, --yes", "Skip prompts and use defaults")
+  .option("--runtime <runtime>", "Preset runtime to record in the starter YAML")
+  .option("--language <language>", "Language to record in the starter YAML")
+  .option(
+    "--package-manager <package-manager>",
+    "Package manager to record in the starter YAML",
+  )
+  .option(
+    "--install-command <command>",
+    "Installer command prefix to use for the starter YAML",
+  )
+  .action((name, options) => scaffoldPresetCommand(name, options));
 
 presetCommand
   .command("remove <name>")

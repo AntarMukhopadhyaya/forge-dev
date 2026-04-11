@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rewriteNodeRunCommand } from "../src/core/runtime.js";
+import fs from "fs-extra";
+import os from "node:os";
+import path from "node:path";
+import { loadPreset } from "../src/core/engine.js";
 
 test("rewriteNodeRunCommand keeps npm commands unchanged", () => {
   const original =
@@ -49,4 +53,25 @@ test("rewriteNodeRunCommand rewrites npm run with --prefix for yarn", () => {
   const rewritten = rewriteNodeRunCommand(original, "yarn");
 
   assert.equal(rewritten, "yarn --cwd frontend run dev");
+});
+
+test("loadPreset accepts non-node runtime and custom install command", async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-runtime-schema-"));
+
+  try {
+    const presetPath = path.join(tempDir, "flutter-supabase.yaml");
+    await fs.writeFile(
+      presetPath,
+      `name: flutter-supabase\nruntime: flutter\nlanguage: dart\nsteps:\n  - install:\n      command: flutter pub add\n      deps:\n        - supabase_flutter\n        - flutter_riverpod\n`,
+      "utf-8",
+    );
+
+    const preset = await loadPreset(presetPath);
+
+    assert.equal(preset.runtime, "flutter");
+    assert.equal(preset.language, "dart");
+    assert.equal(preset.steps[0] && "install" in preset.steps[0], true);
+  } finally {
+    await fs.remove(tempDir);
+  }
 });

@@ -10,6 +10,7 @@ const InstallStep = z.object({
   install: z.object({
     deps: z.array(z.string()),
     dev: z.boolean().optional(),
+    command: z.string().optional(),
   }),
 });
 const FileStep = z.object({
@@ -56,8 +57,9 @@ export const PresetSchema = z.object({
   aliases: z.array(z.string().min(1)).optional(),
   description: z.string().optional(),
   version: z.string().optional(),
-  runtime: z.enum(["node", "python", "go"]),
-  packageManager: z.enum(["npm", "pnpm", "yarn"]).optional(),
+  runtime: z.string().min(1),
+  language: z.string().min(1).optional(),
+  packageManager: z.string().min(1).optional(),
   variables: z.record(z.string(), Variable).optional(),
   steps: z.array(Step),
   postRun: z.array(z.string()).optional(), // e.g., ["npm install", "npm run dev"]

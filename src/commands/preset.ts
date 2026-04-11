@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import chalk from "chalk";
+import prompts from "prompts";
 import { parse as parseYaml } from "yaml";
 import { ForgeError } from "../core/errors.js";
 import {
@@ -31,12 +32,219 @@ function getWorkspaceCustomPresetDir(cwd: string = process.cwd()): string {
   return path.join(cwd, "presets", "custom");
 }
 
-function buildStarterPresetYaml(presetName: string): string {
+type ScaffoldPresetOptions = {
+  runtime?: string;
+  language?: string;
+  packageManager?: string;
+  installCommand?: string;
+  yes?: boolean;
+};
+
+type ResolvedScaffoldPresetOptions = {
+  runtime: string;
+  language?: string;
+  packageManager?: string;
+  installCommand?: string;
+};
+
+const runtimeChoices = [
+  { title: "Node.js", value: "node" },
+  { title: "Flutter", value: "flutter" },
+  { title: "Python", value: "python" },
+  { title: "Go", value: "go" },
+  { title: "Other", value: "other" },
+];
+
+function getDefaultLanguage(runtime: string): string | undefined {
+  switch (runtime) {
+    case "flutter":
+      return "dart";
+    case "python":
+      return "python";
+    case "go":
+      return "go";
+    default:
+      return undefined;
+  }
+}
+
+function getDefaultPackageManager(runtime: string): string | undefined {
+  switch (runtime) {
+    case "node":
+      return "npm";
+    case "flutter":
+      return "pub";
+    case "python":
+      return "pip";
+    case "go":
+      return "go";
+    default:
+      return undefined;
+  }
+}
+
+function getDefaultInstallCommand(runtime: string): string | undefined {
+  switch (runtime) {
+    case "flutter":
+      return "flutter pub add";
+    case "python":
+      return "pip install";
+    case "go":
+      return "go get";
+    default:
+      return undefined;
+  }
+}
+
+function normalizeText(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+async function promptText(
+  name: string,
+  message: string,
+  initial?: string,
+): Promise<string | undefined> {
+  const response = await prompts({
+    type: "text",
+    name,
+    message,
+    initial,
+  });
+
+  if (!response || response[name] === undefined) {
+    throw new ForgeError("Preset scaffold was cancelled.");
+  }
+
+  return normalizeText(response[name]);
+}
+
+async function promptSelect(
+  name: string,
+  message: string,
+  choices: Array<{ title: string; value: string }>,
+  initial = 0,
+): Promise<string> {
+  const response = await prompts({
+    type: "select",
+    name,
+    message,
+    choices,
+    initial,
+  });
+
+  if (!response || response[name] === undefined) {
+    throw new ForgeError("Preset scaffold was cancelled.");
+  }
+
+  return String(response[name]);
+}
+
+async function resolveScaffoldPresetOptions(
+  options: ScaffoldPresetOptions,
+): Promise<ResolvedScaffoldPresetOptions> {
+  const interactive = !options.yes && process.stdin.isTTY && process.stdout.isTTY;
+
+  const runtime =
+    options.runtime ??
+    (interactive
+      ? await promptSelect("runtime", "Choose a runtime", runtimeChoices)
+      : "node");
+
+  const resolved: ResolvedScaffoldPresetOptions = {
+    runtime,
+    language: options.language,
+    packageManager: options.packageManager,
+    installCommand: options.installCommand,
+  };
+
+  if (!interactive) {
+    resolved.language = resolved.language ?? getDefaultLanguage(runtime);
+    resolved.packageManager =
+      resolved.packageManager ?? getDefaultPackageManager(runtime);
+    resolved.installCommand =
+      resolved.installCommand ?? getDefaultInstallCommand(runtime);
+    return resolved;
+  }
+
+  if (!resolved.language) {
+    resolved.language = await promptText(
+      "language",
+      `Language for ${runtime} presets`,
+      getDefaultLanguage(runtime),
+    );
+  }
+
+  if (!resolved.packageManager) {
+    if (runtime === "node") {
+      resolved.packageManager = await promptSelect(
+        "packageManager",
+        "Choose a package manager",
+        [
+          { title: "npm", value: "npm" },
+          { title: "pnpm", value: "pnpm" },
+          { title: "yarn", value: "yarn" },
+        ],
+      );
+    } else {
+      resolved.packageManager = await promptText(
+        "packageManager",
+        `Package manager for ${runtime} presets`,
+        getDefaultPackageManager(runtime),
+      );
+    }
+  }
+
+  if (!resolved.installCommand && runtime !== "node") {
+    resolved.installCommand = await promptText(
+      "installCommand",
+      `Install command for ${runtime} presets`,
+      getDefaultInstallCommand(runtime),
+    );
+  }
+
+  return resolved;
+}
+
+function buildStarterPresetYaml(
+  presetName: string,
+  options: {
+    runtime: string;
+    language?: string;
+    packageManager?: string;
+    installCommand?: string;
+  },
+): string {
+  const metadata: string[] = [];
+
+  metadata.push(`runtime: ${options.runtime}`);
+
+  if (options.language) {
+    metadata.push(`language: ${options.language}`);
+  }
+
+  if (options.packageManager) {
+    metadata.push(`packageManager: ${options.packageManager}`);
+  }
+
+  const setupStep = options.installCommand
+    ? `  - install:\n      command: ${JSON.stringify(options.installCommand)}\n      deps: [example-dependency]\n`
+    : options.runtime === "node"
+      ? `  - run: ${options.packageManager === "pnpm" ? "pnpm" : options.packageManager === "yarn" ? "yarn" : "npm"} init -y\n`
+      : "";
+
+  const postRun =
+    options.runtime === "node"
+      ? `\npostRun:\n  - "cd {{project}}"\n  - "${options.packageManager === "pnpm" ? "pnpm" : options.packageManager === "yarn" ? "yarn" : "npm"} run dev"\n`
+      : "";
+
   return `name: ${presetName}
 description: "Custom preset created with Forge"
 version: "1.0"
-runtime: node
-packageManager: npm
+${metadata.join("\n")}
 
 variables:
   project:
@@ -45,17 +253,12 @@ variables:
     default: "my-app"
 
 steps:
-  - run: npm init -y
-  - file:
+${setupStep}  - file:
       path: README.md
       template: ./templates/README.md.tpl
       vars:
         project: "{{project}}"
-
-postRun:
-  - "cd {{project}}"
-  - "npm run dev"
-`;
+${postRun}`;
 }
 
 function buildStarterMetaJson(presetName: string): string {
@@ -80,7 +283,14 @@ Generated with Forge custom preset \`{{project}}\`.
 async function scaffoldPresetModule(
   name: string,
   rootDir: string,
-  opts: { locationLabel: string; commandExample: string },
+  opts: {
+    locationLabel: string;
+    commandExample: string;
+    runtime?: string;
+    language?: string;
+    packageManager?: string;
+    installCommand?: string;
+  },
 ) {
   const safeName = toKebabCase(name);
 
@@ -99,7 +309,16 @@ async function scaffoldPresetModule(
   }
 
   await fs.ensureDir(templateDir);
-  await fs.writeFile(presetPath, buildStarterPresetYaml(safeName), "utf-8");
+  await fs.writeFile(
+    presetPath,
+    buildStarterPresetYaml(safeName, {
+      runtime: opts.runtime ?? "node",
+      language: opts.language,
+      packageManager: opts.packageManager,
+      installCommand: opts.installCommand,
+    }),
+    "utf-8",
+  );
   await fs.writeFile(metaPath, buildStarterMetaJson(safeName), "utf-8");
   await fs.writeFile(templateFile, buildStarterTemplate(), "utf-8");
 
@@ -166,12 +385,20 @@ async function findMatchingCustomPresetFiles(identifier: string): Promise<string
   return [...matches];
 }
 
-export async function createPresetCommand(name: string) {
+export async function createPresetCommand(
+  name: string,
+  options: ScaffoldPresetOptions = {},
+) {
   try {
+    const scaffoldOptions = await resolveScaffoldPresetOptions(options);
     const safeName = toKebabCase(name);
     await scaffoldPresetModule(name, getForgeCustomPresetDir(), {
       locationLabel: "custom",
       commandExample: `forge-dev init ${safeName} my-app`,
+      runtime: scaffoldOptions.runtime,
+      language: scaffoldOptions.language,
+      packageManager: scaffoldOptions.packageManager,
+      installCommand: scaffoldOptions.installCommand,
     });
   } catch (error) {
     if (error instanceof ForgeError) {
@@ -184,12 +411,20 @@ export async function createPresetCommand(name: string) {
   }
 }
 
-export async function scaffoldPresetCommand(name: string) {
+export async function scaffoldPresetCommand(
+  name: string,
+  options: ScaffoldPresetOptions = {},
+) {
   try {
+    const scaffoldOptions = await resolveScaffoldPresetOptions(options);
     const safeName = toKebabCase(name);
     await scaffoldPresetModule(name, getWorkspaceCustomPresetDir(), {
       locationLabel: "workspace",
       commandExample: `forge-dev init ${safeName} my-app`,
+      runtime: scaffoldOptions.runtime,
+      language: scaffoldOptions.language,
+      packageManager: scaffoldOptions.packageManager,
+      installCommand: scaffoldOptions.installCommand,
     });
   } catch (error) {
     if (error instanceof ForgeError) {

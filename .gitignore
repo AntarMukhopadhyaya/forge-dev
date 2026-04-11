@@ -37,3 +37,6 @@ next-saas-example/
 my-app/
 .vscode/
 .scripts/
+
+docs/.vitepress/dist/
+docs/.vitepress/cache/

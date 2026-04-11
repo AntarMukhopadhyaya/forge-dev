@@ -355,6 +355,44 @@ test("cli preset scaffold normalizes name to kebab-case", async () => {
   }
 });
 
+test("cli preset scaffold records custom runtime metadata", async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-cli-scaffold-runtime-"));
+  const forgeHome = path.join(tempDir, "forge-home");
+
+  try {
+    const result = await runCli(
+      [
+        "preset",
+        "scaffold",
+        "flutter-supabase-riverpod",
+        "--runtime",
+        "flutter",
+        "--language",
+        "dart",
+        "--package-manager",
+        "pub",
+        "--install-command",
+        "flutter pub add",
+      ],
+      { cwd: tempDir, forgeHome },
+    );
+
+    assert.equal(result.code, 0);
+
+    const presetYaml = await fs.readFile(
+      path.join(tempDir, "presets", "custom", "flutter-supabase-riverpod", "preset.yaml"),
+      "utf-8",
+    );
+
+    assert.match(presetYaml, /runtime: flutter/);
+    assert.match(presetYaml, /language: dart/);
+    assert.match(presetYaml, /packageManager: pub/);
+    assert.match(presetYaml, /command: "flutter pub add"/);
+  } finally {
+    await fs.remove(tempDir);
+  }
+});
+
 test("cli init can load a preset from explicit yaml path", async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-cli-init-path-"));
   const forgeHome = path.join(tempDir, "forge-home");
